@@ -28,8 +28,8 @@ export default {
     return {
       // 登录表单的绑定对象
       loginForm: {
-        username: '',
-        password: ''
+        username: 'admin',
+        password: '123456'
       },
       // 这是表单的验证规则对象
       loginFormRules: {
@@ -49,21 +49,16 @@ export default {
       this.$refs.loginFormRef.resetFields()
     },
     login () {
-      this.$refs.loginFormRef.validate(valid => {
-        // eslint-disable-next-line no-useless-return
+      this.$refs.loginFormRef.validate(async valid => {
         if (!valid) { return }
-        // eslint-disable-next-line no-undef
-        this.$axios({
-          url: 'http://127.0.0.1:8888/api/private/v1/login',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-          methods: 'post',
-          // eslint-disable-next-line no-undef
-          data: { username: this.loginForm.username, password: this.loginForm.password }
-        }).then(res => {
-          console.log(res)
-        }).catch(res => {
-          console.log(res)
-        })
+        const { data: result } = await this.$http.post('http://127.0.0.1:8888/api/private/v1/login', this.loginForm)
+        if (result.meta.status !== 200) {
+          return this.$message.error('登录失败')
+        }
+        this.$message.success('登录成功')
+        console.log(result)
+        window.sessionStorage.setItem('token', result.data.token)
+        this.$router.push('/home')
       })
     }
   }
