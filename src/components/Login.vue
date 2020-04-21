@@ -52,6 +52,18 @@ export default {
       this.$refs.loginFormRef.validate(valid => {
         // eslint-disable-next-line no-useless-return
         if (!valid) { return }
+        // eslint-disable-next-line no-undef
+        this.$axios({
+          url: 'http://127.0.0.1:8888/api/private/v1/login',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          methods: 'post',
+          // eslint-disable-next-line no-undef
+          data: { username: this.loginForm.username, password: this.loginForm.password }
+        }).then(res => {
+          console.log(res)
+        }).catch(res => {
+          console.log(res)
+        })
       })
     }
   }
