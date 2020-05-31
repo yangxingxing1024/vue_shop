@@ -55,8 +55,8 @@
         </template>
       </el-table-column>
       <el-table-column label="操作" width="180px">
-        <template>
-          <el-button type="primary" icon="el-icon-edit" size="mini" ></el-button>
+        <template slot-scope="scope">
+          <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.id)"></el-button>
            <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
            <!-- 分配角色按钮 -->
            <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
@@ -79,8 +79,7 @@
     </el-card>
 
     <!-- 添加用户的对华框 -->
-    <el-dialog
-  title="添加用户" :visible.sync="addDialogVisible">
+    <el-dialog title="添加用户" :visible.sync="addDialogVisible" @close="addDialogClosed">
   <!-- 内容主体区域 -->
   <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="70px">
     <el-form-item label="用户名" prop="username">
@@ -103,9 +102,21 @@
   <!-- 底部区域 -->
   <span slot="footer" class="dialog-footer">
     <el-button @click="addDialogVisible = false">取 消</el-button>
-    <el-button type="primary" @click="addDialogVisible = false">确 定</el-button>
+    <el-button type="primary" @click="addUser">确 定</el-button>
   </span>
-</el-dialog>
+
+    </el-dialog>
+        <el-dialog title="修改" :visible.sync="editDialogVisible"  width="50%">
+      <el-form :model="editFrom" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+        <el-form-item label="活动名称" prop="name">
+          <el-input v-model="ruleForm.name"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editDialogVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -164,7 +175,9 @@ export default {
           { validator: checkMobile, trigger: 'blur' }
 
         ]
-      }
+      },
+      editDialogVisible: false,
+      editForm: {}
     }
   },
   created() {
@@ -198,6 +211,29 @@ export default {
         return this.$message.error('更新用户状态失败')
       }
       this.$message.success('更新用户状态成功')
+    },
+    addDialogClosed() {
+      this.$refs.addFormRef.resetFields()
+    },
+    addUser() {
+      this.$refs.addFormRef.validate(async validate => {
+        if (!validate) return
+        const { data: res } = await this.$axios.post('users', this.addForm)
+        if (res.meta.status !== 201) {
+          this.$message.error('添加用户失败')
+        }
+        this.$message.success('添加用户成功')
+        this.addDialogVisible = false
+        this.getUserList()
+      })
+    },
+    async showEditDialog(id) {
+      const { data: res } = await this.$axios.get(`users/${id}`)
+      if (res.meta.status !== 200) {
+        return this.$message.error('查询用户信息失败')
+      }
+      this.editDialogVisible = true
+      this.editForm = res.data
     }
   }
 }
