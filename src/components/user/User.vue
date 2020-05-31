@@ -106,15 +106,24 @@
   </span>
 
     </el-dialog>
-        <el-dialog title="修改" :visible.sync="editDialogVisible"  width="50%">
-      <el-form :model="editFrom" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
-        <el-form-item label="活动名称" prop="name">
-          <el-input v-model="ruleForm.name"></el-input>
+
+        <el-dialog title="修改" :visible.sync="editDialogVisible"  width="50%" @closed="editDialogClosed">
+
+      <el-form :model="editForm" :rules="editFormRules" ref="editForm" label-width="70px">
+        <el-form-item label="用户名">
+          <el-input v-model="editForm.username"  disabled></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="editForm.email"></el-input>
+        </el-form-item>
+
+        <el-form-item label="手机" prop="mobile">
+          <el-input v-model="editForm.mobile"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="editDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="editDialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="editUserinfo">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -177,7 +186,19 @@ export default {
         ]
       },
       editDialogVisible: false,
-      editForm: {}
+      editForm: {
+
+      },
+      editFormRules: {
+        email: [
+          { required: true, message: '请输入邮箱', trigger: 'blur' },
+          { validator: checkEmail, trigger: 'blur' }
+        ],
+        mobile: [
+          { required: true, message: '请输入手机', trigger: 'blur' },
+          { validator: checkMobile, trigger: 'blur' }
+        ]
+      }
     }
   },
   created() {
@@ -234,6 +255,23 @@ export default {
       }
       this.editDialogVisible = true
       this.editForm = res.data
+    },
+    editDialogClosed () {
+      this.$refs.editForm.resetFields()
+    },
+    editUserinfo () {
+      this.$refs.editForm.validate(async validate => {
+        // eslint-disable-next-line no-useless-return
+        if (!validate) return
+        const { data: res } = await this.$axios.put(`users/${this.editForm.id}`, { email: this.editForm.email, mobile: this.editForm.mobile })
+        if (res.meta.status !== 200) return this.$message.error('更新用户信息失败')
+
+        // 关闭对话框
+
+        this.editDialogVisible = false
+        this.getUserList()
+        this.$message.success('更新用户信息成功')
+      })
     }
   }
 }
