@@ -57,7 +57,8 @@
       <el-table-column label="操作" width="180px">
         <template slot-scope="scope">
           <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.id)"></el-button>
-           <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+           <el-button type="danger" icon="el-icon-delete" size="mini"
+           @click="removeUserById(scope.row.id)"></el-button>
            <!-- 分配角色按钮 -->
            <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
             <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
@@ -189,6 +190,7 @@ export default {
       editForm: {
 
       },
+      // 修改表单的验证对象
       editFormRules: {
         email: [
           { required: true, message: '请输入邮箱', trigger: 'blur' },
@@ -256,22 +258,45 @@ export default {
       this.editDialogVisible = true
       this.editForm = res.data
     },
+    // 监听修改用户对话框的关闭事件
     editDialogClosed () {
       this.$refs.editForm.resetFields()
     },
     editUserinfo () {
-      this.$refs.editForm.validate(async validate => {
+      this.$refs.editForm.validate(async valid => {
         // eslint-disable-next-line no-useless-return
-        if (!validate) return
-        const { data: res } = await this.$axios.put(`users/${this.editForm.id}`, { email: this.editForm.email, mobile: this.editForm.mobile })
+        if (!valid) return
+        const { data: res } = await this.$axios.put(`users/${this.editForm.id}`,
+          { email: this.editForm.email, mobile: this.editForm.mobile })
         if (res.meta.status !== 200) return this.$message.error('更新用户信息失败')
 
         // 关闭对话框
-
         this.editDialogVisible = false
+        // 刷新数据列表
         this.getUserList()
+        // 提示修改成功
         this.$message.success('更新用户信息成功')
       })
+    },
+    async removeUserById (id) {
+      const res = await this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).catch(err => {
+        return err
+      })
+      // 如果用户确认删除 则返回confirm字符串
+      // 如果用户取消删除 则返回cancel字符串
+      if (res !== 'confirm') {
+        return this.$message.info('已取消删除')
+      }
+      const { data: result } = await this.$axios.delete(`users/${id}`)
+      if (result.meta.status !== 200) {
+        return this.$message.error('删除用户失败')
+      }
+      this.$message.success('删除用户成功')
+      this.getUserList()
     }
   }
 }
