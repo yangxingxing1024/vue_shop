@@ -2,9 +2,11 @@ import Vue from 'vue'
 import {
   Button, Form, FormItem, Input, Message, Container, Header, Aside, Main
   , Menu, Submenu, MenuItemGroup, MenuItem, Table, TableColumn, Card, Breadcrumb, BreadcrumbItem,
-  Row, Col, Switch, Tooltip, Pagination, Dialog, MessageBox
+  Row, Col, Switch, Tooltip, Pagination, Dialog, MessageBox, Tag, Tree
 } from 'element-ui'
 
+Vue.use(Tree)
+Vue.use(Tag)
 Vue.use(Dialog)
 Vue.use(Pagination)
 Vue.use(Tooltip)
